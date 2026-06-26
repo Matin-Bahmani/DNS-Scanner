@@ -27,7 +27,7 @@ This project relies on the `dnspython` library for low-level DNS operations. Ins
 
 ## 🧬 Project Structure
 Ensure your local repository has the following files in the same directory:
-* main.py
+* main.py (core)
 * dns_servers.py
 
 ---
