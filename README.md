@@ -36,7 +36,7 @@ Ensure your local repository has the following files in the same directory:
 To launch the scanner, simply execute the main script from your terminal:
 ```python main.py```
 
-# How it works:
+### How it works:
 * The script initializes and waits for you to press Enter.
 * It fetches DNS servers defined in dns_servers.py.
 * It performs active queries (resolving google.com) against each server.
