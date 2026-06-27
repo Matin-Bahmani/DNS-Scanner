@@ -36,12 +36,12 @@ Ensure your local repository has the following files in the same directory:
 To launch the scanner, simply execute the main script from your terminal:
 ```python main.py```
 
-#How it works:
-*The script initializes and waits for you to press Enter.
-*It fetches DNS servers defined in dns_servers.py.
-*It performs active queries (resolving google.com) against each server.
-*Outputs the results dynamically in a tabular format showing Server Name, IP Address, and Latency (ms) or "No response".
-*Prompts you to either rerun the scan or exit.
+# How it works:
+* The script initializes and waits for you to press Enter.
+* It fetches DNS servers defined in dns_servers.py.
+* It performs active queries (resolving google.com) against each server.
+* Outputs the results dynamically in a tabular format showing Server Name, IP Address, and Latency (ms) or "No response".
+* Prompts you to either rerun the scan or exit.
 
 ---
 
@@ -71,4 +71,4 @@ Would you like to run another scan? (Y/N):
 
 ## Author
 * **Matin Bahmani** - [GitHub Profile](https://github.com/Matin-Bahmani)
-Feel free to fork this repository, open issues, or submit pull requests to improve the tool!
+* Feel free to fork this repository, open issues, or submit pull requests to improve the tool!
