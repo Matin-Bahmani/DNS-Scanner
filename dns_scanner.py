@@ -65,6 +65,7 @@ if __name__ == "__main__":
 
         # List
         print("Testing a few sample servers...\n")
+
         print(f"{'Server Name':<35}{'IP':<40}{'Type':<10}{'Result'}")
         print("-" * 100)
 
@@ -111,6 +112,7 @@ if __name__ == "__main__":
                     f"\033[1m🥇 Best IPv4 DNS: {fastest_v4['name']} [{fastest_v4['ip']}] -> {fastest_v4['ping']}\033[0m")
             else:
                 print("No IPv4 DNS under 40ms found.")
+
             if ipv6_bests:
                 fastest_v6 = min(
                     ipv6_bests, key=lambda x: float(x['ping'].split()[0]))
