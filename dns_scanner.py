@@ -1,11 +1,13 @@
+import os
+import sys
 import time
-from typing import Optional
-
 import dns.resolver
 import dns.exception
+import ipaddress
+from typing import Optional
 
 
-# Funcion
+# Core
 def measure_dns_latency(
     server_ip: str,
     domain: str = "google.com",
@@ -42,9 +44,55 @@ def measure_dns_latency(
     return sum(latencies) / len(latencies)
 
 
+# Loding line
+def show_loading(message="Scanning"):
+
+    animation = ["[■□□□□]", "[■■□□□]", "[■■■□□]", "[■■■■□]", "[■■■■■]"]
+    for frame in animation:
+        sys.stdout.write(f"\r⏳ {message} {frame}")
+        sys.stdout.flush()
+        time.sleep(0.08)
+
+    sys.stdout.write("\r" + " " * 50 + "\r")
+    sys.stdout.flush()
+
+
+# Config file
+def load_custom_ips(file_path):
+
+    if not os.path.exists(file_path):
+        print(f"\nError: File '{file_path}' not found!")
+        return None
+
+    custom_servers = []
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            for index, line in enumerate(file, 1):
+                ip = line.strip()
+                if not ip or ip.startswith("#"):
+                    continue
+
+                try:
+                    ip_obj = ipaddress.ip_address(ip)
+                    ip_version = f"IPv{ip_obj.version}"
+
+                    custom_servers.append({
+                        "name": f"Custom_Target_{index}",
+                        "ip": ip,
+                        "type": ip_version
+                    })
+                except ValueError:
+                    print(f"Skipping invalid IP on line {index}: {ip}")
+
+        return custom_servers
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return None
+
+
+# Start
 if __name__ == "__main__":
 
-    # Start
     print(r"""
     ____  _   _  ____    _____ ______ __    _   _ _   _  _____ ___ 
    / __ \/ | / / ___/   / ___// ____/   |  / | / / | / / ____/ __ \
@@ -54,14 +102,43 @@ if __name__ == "__main__":
           """)
 
     # Information
-    print("Version 1.1.0")
+    print("Version 1.2.0")
     print("https://github.com/Matin-Bahmani")
-    print("=" * 100)
 
     # Loop
     while True:
-        input("Press Enter to start the scan...")
-        from dns_servers import PUBLIC_DNS_SERVERS
+        # Interactive
+        print("=" * 60)
+        print("Select Scan Mode:")
+        print("1. Use Default Public DNS List")
+        print("2. Load Custom IP/DNS List from TXT File")
+        print("3. Exit")
+        print("=" * 60)
+
+        choice = input("Enter choice (1, 2 or 3): ").strip()
+
+        if choice == "3":
+            print("Thank you for using this program <3",
+                  "Goodbye!")
+            break
+        if choice == "2":
+            file_path = input(
+                "Enter the path to your TXT file (e.g., targets.txt): ").strip()
+            file_path = file_path.strip("'\"")
+            custom_list = load_custom_ips(file_path)
+            if custom_list:
+                active_servers = custom_list
+                print(
+                    f"Successfully loaded {len(active_servers)} custom targets.")
+            else:
+                print("Falling back to default DNS list...")
+                from dns_servers import PUBLIC_DNS_SERVERS
+                active_servers = PUBLIC_DNS_SERVERS
+        else:
+            from dns_servers import PUBLIC_DNS_SERVERS
+            active_servers = PUBLIC_DNS_SERVERS
+
+        input("\nPress Enter to start the scan...")
 
         # List
         print("Testing a few sample servers...\n")
@@ -71,7 +148,9 @@ if __name__ == "__main__":
 
         Best_DNS = []
 
-        for server in PUBLIC_DNS_SERVERS:
+        # Test servers
+        for server in active_servers:
+            show_loading(f"Testing {server['name']} ({server['ip']})")
             latency = measure_dns_latency(server["ip"])
 
             ip_type = "IPv6" if ":" in server["ip"] else "IPv4"
