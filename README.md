@@ -7,13 +7,12 @@ A lightweight, efficient Python tool designed to benchmark and measure the preci
 ## 🚀 Features
 
 * **Dual-Protocol Support (IPv4 & IPv6):** Seamlessly scans and benchmarks both IPv4 and IPv6 DNS addresses simultaneously.
-* **Auto-Protocol Detection:** Automatically detects whether a server is IPv4 or IPv6 and queries the correct corresponding record type (`A` for IPv4, `AAAA` for IPv6).
+* **Bulk & Custom List Scanning:** Load your own custom list of IP addresses from a `.txt` file for automated batch testing.
+* **Auto-Protocol Detection:** Automatically identifies whether a server is IPv4 or IPv6 and queries the correct corresponding record type (`A` for IPv4, `AAAA` for IPv6).
+* **Live Dynamic UI:** Features a smooth, inline terminal loading animation to show real-time scanning progress without cluttering the final output table.
 * **Real DNS Query Benchmarking:** Measures actual resolution speed using low-level DNS operations rather than just standard ICMP ping response times.
-* **Smart Exception Handling:** Gracefully handles timeouts, `NXDOMAIN`, `NoAnswer`, and unreachable nameservers without crashing.
-* **Averaged Latency Output:** Sends multiple attempts (default: 3) per server to calculate an accurate average response time in milliseconds (ms).
-* **Upgraded CLI Interface:** Features a well-formatted ASCII art banner, structured tabular data output with clear type classification, and a smart recommendation engine.
-* **Interactive Mode:** Allows running multiple consecutive scans without restarting the script.
-
+* **Smart Exception Handling:** Gracefully handles timeouts, `NXDOMAIN`, `NoAnswer`, invalid IPs, and unreachable nameservers without crashing.
+* **Interactive Mode:** Allows running multiple consecutive scans or switching between lists without restarting the script.
 ---
 
 ## 🛠️ Requirements & Installation
@@ -29,8 +28,8 @@ This project relies on the `dnspython` library for low-level DNS operations. Ins
 
 ## 🧬 Project Structure
 Ensure your local repository has the following files in the same directory:
-* main.py (Core Execution script)
-* dns_servers.py (Database list of public DNS addresses)
+* dns_scanner.py (Core)
+* dns_servers.py (Database)
 
 ---
 
@@ -39,12 +38,28 @@ To launch the scanner, simply execute the main script from your terminal:
 ```python main.py```
 
 ### How it works:
-* The script initializes and waits for you to press Enter.
-* It fetches all modern IPv4 and IPv6 DNS servers defined in dns_servers.py.
-* It performs active queries (resolving google.com) using the appropriate record type.
-* Outputs the results dynamically in a clean tabular format showing Server Name, IP Address, Type (IPv4/IPv6), and Latency (ms).
-* At the end, if any server responds under 40ms, it highlights the Recommended Best DNS for your network.
-* Prompts you to either rerun the scan or exit.
+* Choose Mode: The script prompts you to choose between using the built-in global DNS list or loading a custom ```.txt``` file
+* Dynamic Processing: A live inline loader spins while actively querying targets (resolving google.com)
+* Clean Presentation: Outputs results dynamically in a clean tabular format showing Server Name, IP Address, Type (IPv4/IPv6), and Latency (ms)
+* Smart Recommendations: Highlights the fastest DNS servers under 40ms on your network at the end of the scan
+
+---
+
+## 📂 Format for Custom Lists(.txt)
+If you choose to load a custom list, create a simple text file with one IP address per line. Comments starting with ```#``` and blank lines are automatically ignored:
+```
+1.1.1.1
+1.0.0.1
+8.8.8.8
+8.8.4.4
+```
+
+---
+
+## 💡 Quick Start with Test File
+To test the bulk scanning feature instantly, a pre-configured file containing 100 public and alternative DNS servers is provided in the repository.
+When prompted by the script, simply enter:
+```top_100_dns.txt```
 
 ---
 
@@ -56,20 +71,25 @@ To launch the scanner, simply execute the main script from your terminal:
  / /_/ / /|  /___/ /    ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/    /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|  
                                                                     
-Version 1.0.0
-(https://github.com/Matin-Bahmani)
+Version 1.2.0
+[https://github.com/Matin-Bahmani](https://github.com/Matin-Bahmani)
 ============================================================
+Select Scan Mode:
+1. Use Default Public DNS List
+2. Load Custom IP/DNS List from TXT File
+3. Exit
+============================================================
+Enter choice (1, 2 or 3): 1
+
 Press Enter to start the scan...
-Testing a few sample servers...
 
 Server Name              IP                            Type      Result
----------------------------------------------------------------------------
+----------------------------------------------------------------------------
 Cloudflare               1.1.1.1                       IPv4      8.5 ms
-Cloudflare IPv6          2606:4700:4700::1111          IPv6      12.1 ms
+Cloudflare               2606:4700:4700::1111          IPv6      12.1 ms
 Google                   8.8.8.8                       IPv4      14.2 ms
-Unknown Server           10.0.0.99                     IPv4      No response
----------------------------------------------------------------------------
-
+Custom_Target_1          10.0.0.99                     IPv4      No response
+----------------------------------------------------------------------------
 Test is completed
 Recommended DNS: Cloudflare 1.1.1.1 -> 8.5 ms
 
@@ -78,11 +98,11 @@ Would you like to run another scan? (Y/N):
 
 ---
 
-## 🚀 Changelog (v1.1.0)
-* Added full IPv6 scanning support via dynamic AAAA record resolution.
-* Expanded the DNS database in dns_servers.py to include verified global IPv6 addresses.
-* Refactored the UI table layout to display a dedicated Type column.
-* Optimized spacing to accommodate long IPv6 string addresses cleanly.
+## 🔮 Changelog (v1.1.0)
+* Added Bulk Scan feature supporting custom target text files ```.txt```
+* Embedded ```ipaddress``` smart validation to dynamically parse and verify user-inputted IP lists
+* Implemented an inline terminal loading animation (```\r``` dynamic buffer) for smoother UX
+* Added a robust main menu for mode selection and graceful exits
 
 ---
 
