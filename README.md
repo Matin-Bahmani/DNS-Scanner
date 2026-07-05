@@ -63,7 +63,7 @@ When prompted by the script, simply enter:
 
 ---
 
-## ✨ Output Example (v1.1.0)
+## ✨ Output Example (v1.2.1)
 ```
     ____  _   _  ____     _____ ______ __    _   _ _   _  _____ ___ 
    / __ \/ | / / ___/    / ___// ____/   |  / | / / | / / ____/ __ \
@@ -71,8 +71,8 @@ When prompted by the script, simply enter:
  / /_/ / /|  /___/ /    ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/    /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|  
                                                                     
-Version 1.2.0
-[https://github.com/Matin-Bahmani](https://github.com/Matin-Bahmani)
+Version 1.2.1
+[https://github.com/Matin-Bahmani]
 ============================================================
 Select Scan Mode:
 1. Use Default Public DNS List
@@ -80,7 +80,6 @@ Select Scan Mode:
 3. Exit
 ============================================================
 Enter choice (1, 2 or 3): 1
-
 Press Enter to start the scan...
 
 Server Name              IP                            Type      Result
@@ -90,18 +89,22 @@ Cloudflare               2606:4700:4700::1111          IPv6      12.1 ms
 Google                   8.8.8.8                       IPv4      14.2 ms
 Custom_Target_1          10.0.0.99                     IPv4      No response
 ----------------------------------------------------------------------------
+
 Test is completed
-Recommended DNS: Cloudflare 1.1.1.1 -> 8.5 ms
+======================================== RECOMMENDATIONS ========================================
+🥇 Best IPv4 DNS: Cloudflare [1.1.1.1] -> 42.5 ms
+🚀 Best IPv6 DNS: Cloudflare IPv6 [2606:4700:4700::1111] -> 45.1 ms
+=================================================================================================
 
 Would you like to run another scan? (Y/N):
 ```
 
 ---
 
-## 🔮 Changelog (v1.1.0)
+## 🔮 Changelog (v1.2.1)
 * Added Bulk Scan feature supporting custom target text files ```.txt```
 * Embedded ```ipaddress``` smart validation to dynamically parse and verify user-inputted IP lists
-* Implemented an inline terminal loading animation (```\r``` dynamic buffer) for smoother UX
+* Implemented an inline terminal loading animation for smoother UX
 * Added a robust main menu for mode selection and graceful exits
 
 ---

@@ -102,7 +102,7 @@ if __name__ == "__main__":
           """)
 
     # Information
-    print("Version 1.2.0")
+    print("Version 1.2.1")
     print("https://github.com/Matin-Bahmani")
 
     # Loop
@@ -158,12 +158,11 @@ if __name__ == "__main__":
             if latency is not None:
                 result = f"{latency:.1f} ms"
 
-                if latency < 40:
-                    Best_DNS.append({
-                        "name": server["name"],
-                        "ip": server["ip"],
-                        "ping": result
-                    })
+                Best_DNS.append({
+                    "name": server["name"],
+                    "ip": server["ip"],
+                    "ping": result
+                })
 
                 print(
                     f"{server['name']:<35}{server['ip']:<40}{ip_type:<10}{result}")
@@ -190,7 +189,7 @@ if __name__ == "__main__":
                 print(
                     f"\033[1m🥇 Best IPv4 DNS: {fastest_v4['name']} [{fastest_v4['ip']}] -> {fastest_v4['ping']}\033[0m")
             else:
-                print("No IPv4 DNS under 40ms found.")
+                print("No working IPv4 DNS found.")
 
             if ipv6_bests:
                 fastest_v6 = min(
@@ -199,7 +198,7 @@ if __name__ == "__main__":
                     f"\033[1m🚀 Best IPv6 DNS: {fastest_v6['name']} [{fastest_v6['ip']}] -> {fastest_v6['ping']}\033[0m")
             else:
                 print(
-                    "No IPv6 DNS under 40ms found. (Check if IPv6 is enabled on your network)")
+                    "No working IPv6 DNS found. (Check if IPv6 is enabled on your network)")
 
             print("=" * 97 + "\n")
 
