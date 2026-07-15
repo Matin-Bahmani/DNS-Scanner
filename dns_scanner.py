@@ -6,6 +6,21 @@ import dns.exception
 import ipaddress
 from typing import Optional
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.theme import Theme
+
+# Theme
+custom_theme = Theme({
+    "info": "dim cyan",
+    "warning": "magenta",
+    "danger": "bold red",
+    "success": "bold green",
+    "accent": "bold yellow"
+})
+console = Console(theme=custom_theme)
+
 
 # Core
 def measure_dns_latency(
@@ -44,17 +59,9 @@ def measure_dns_latency(
     return sum(latencies) / len(latencies)
 
 
-# Loding line
 def show_loading(message="Scanning"):
-
-    animation = ["[■□□□□]", "[■■□□□]", "[■■■□□]", "[■■■■□]", "[■■■■■]"]
-    for frame in animation:
-        sys.stdout.write(f"\r⏳ {message} {frame}")
-        sys.stdout.flush()
-        time.sleep(0.08)
-
-    sys.stdout.write("\r" + " " * 50 + "\r")
-    sys.stdout.flush()
+    with console.status(f"[accent]{message}[/accent]", spinner="dots") as status:
+        time.sleep(0.5)
 
 
 # Config file
@@ -93,58 +100,68 @@ def load_custom_ips(file_path):
 # Start
 if __name__ == "__main__":
 
-    print(r"""
+    # Information
+    console.print(r"""[bold green]
     ____  _   _  ____    _____ ______ __    _   _ _   _  _____ ___ 
    / __ \/ | / / ___/   / ___// ____/   |  / | / / | / / ____/ __ \
   / / / /  |/ /\__ \    \__ \/ /   / /| | /  |/ /  |/ / __/ / /_/ /
  / /_/ / /|  /___/ /   ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
-/_____/_/ |_//____/   /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|                                                                  
-          """)
+/_____/_/ |_//____/   /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|     
 
-    # Information
-    print("Version 1.2.1")
-    print("https://github.com/Matin-Bahmani")
+            Version 1.2.2 • Developed by Matin-Bahmani 
+            Github • https://github.com/Matin-Bahmani         
+                                                           
+          [/bold green]""")
 
     # Loop
     while True:
-        # Interactive
-        print("=" * 60)
-        print("Select Scan Mode:")
-        print("1. Use Default Public DNS List")
-        print("2. Load Custom IP/DNS List from TXT File")
-        print("3. Exit")
-        print("=" * 60)
+       # Interactive Mode
+        console.print("\n[bold cyan]Select Scan Mode:[/bold cyan]")
+        console.print(
+            "  [bold green]1.[/bold green] Use Default Public DNS List")
+        console.print(
+            "  [bold green]2.[/bold green] Load Custom IP/DNS List from TXT File")
+        console.print("  [bold green]3.[/bold green] Exit")
+        console.print("[dim]" + "=" * 45 + "[/dim]")
 
-        choice = input("Enter choice (1, 2 or 3): ").strip()
+        choice = console.input(
+            "[bold white]Enter choice (1, 2 or 3): [/bold white]").strip()
 
+        # Conditions
         if choice == "3":
-            print("Thank you for using this program <3",
-                  "Goodbye!")
+            console.print(
+                "[accent]Thank you for using this program <3 Goodbye![/accent]")
             break
+
         if choice == "2":
-            file_path = input(
-                "Enter the path to your TXT file (e.g., targets.txt): ").strip()
+            file_path = console.input(
+                "[bold white]Enter the path to your TXT file (e.g., targets.txt): [/bold white]").strip()
             file_path = file_path.strip("'\"")
             custom_list = load_custom_ips(file_path)
+
             if custom_list:
                 active_servers = custom_list
-                print(
-                    f"Successfully loaded {len(active_servers)} custom targets.")
+                console.print(
+                    f"[success]Successfully loaded {len(active_servers)} custom targets.[/success]")
             else:
-                print("Falling back to default DNS list...")
+                console.print(
+                    "[warning]Falling back to default DNS list...[/warning]")
                 from dns_servers import PUBLIC_DNS_SERVERS
                 active_servers = PUBLIC_DNS_SERVERS
         else:
             from dns_servers import PUBLIC_DNS_SERVERS
             active_servers = PUBLIC_DNS_SERVERS
 
-        input("\nPress Enter to start the scan...")
+        console.input(
+            "\n[bold yellow]Press Enter to start the scan...[/bold yellow]\n")
 
         # List
-        print("Testing a few sample servers...\n")
-
-        print(f"{'Server Name':<35}{'IP':<40}{'Type':<10}{'Result'}")
-        print("-" * 100)
+        table = Table(
+            title="[bold white]DNS Speed Test Results[/bold white]", show_lines=True)
+        table.add_column("Server Name", style="cyan", no_wrap=True)
+        table.add_column("IP Address", style="magenta")
+        table.add_column("Type", justify="center")
+        table.add_column("Result (Latency)", justify="right")
 
         Best_DNS = []
 
@@ -161,55 +178,57 @@ if __name__ == "__main__":
                 Best_DNS.append({
                     "name": server["name"],
                     "ip": server["ip"],
-                    "ping": result
+                    "ping": result,
+                    "raw_latency": latency
                 })
 
-                print(
-                    f"{server['name']:<35}{server['ip']:<40}{ip_type:<10}{result}")
-
+                if latency < 50:
+                    colored_result = f"[bold green]{result}[/bold green]"
+                elif latency < 120:
+                    colored_result = f"[bold yellow]{result}[/bold yellow]"
+                else:
+                    colored_result = f"[orange3]{result}[/orange3]"
             else:
-                result = "No response"
-                print(
-                    f"{server['name']:<35}{server['ip']:<40}{ip_type:<10}{result}")
+                colored_result = "[danger]No response[/danger]"
 
-        print("-" * 100 + "\n")
-        print("Test is completed")
+            table.add_row(server['name'], server['ip'],
+                          ip_type, colored_result)
+        # Show table
+        console.print(table)
+        console.print("[success]Test is completed![/success]\n")
 
         # RECOMMENDATIONS PART
         if Best_DNS:
-
             ipv4_bests = [s for s in Best_DNS if ":" not in s["ip"]]
             ipv6_bests = [s for s in Best_DNS if ":" in s["ip"]]
 
-            print("=" * 40 + " RECOMMENDATIONS " + "=" * 40)
+            recommendation_text = ""
 
             if ipv4_bests:
-                fastest_v4 = min(
-                    ipv4_bests, key=lambda x: float(x['ping'].split()[0]))
-                print(
-                    f"\033[1m🥇 Best IPv4 DNS: {fastest_v4['name']} [{fastest_v4['ip']}] -> {fastest_v4['ping']}\033[0m")
+                fastest_v4 = min(ipv4_bests, key=lambda x: x['raw_latency'])
+                recommendation_text += f"🥇 [bold green]Best IPv4 DNS:[/bold green] {fastest_v4['name']} [{fastest_v4['ip']}] -> [bold green]{fastest_v4['ping']}[/bold green]\n"
             else:
-                print("No working IPv4 DNS found.")
+                recommendation_text += "[danger]No working IPv4 DNS found.[/danger]\n"
 
             if ipv6_bests:
-                fastest_v6 = min(
-                    ipv6_bests, key=lambda x: float(x['ping'].split()[0]))
-                print(
-                    f"\033[1m🚀 Best IPv6 DNS: {fastest_v6['name']} [{fastest_v6['ip']}] -> {fastest_v6['ping']}\033[0m")
+                fastest_v6 = min(ipv6_bests, key=lambda x: x['raw_latency'])
+                recommendation_text += f"🚀 [bold green]Best IPv6 DNS:[/bold green] {fastest_v6['name']} [{fastest_v6['ip']}] -> [bold green]{fastest_v6['ping']}[/bold green]"
             else:
-                print(
-                    "No working IPv6 DNS found. (Check if IPv6 is enabled on your network)")
+                recommendation_text += "[warning]No working IPv6 DNS found. (Check IPv6 settings)[/warning]"
 
-            print("=" * 97 + "\n")
+            console.print(Panel(
+                recommendation_text,
+                title="[bold gold1]RECOMMENDATIONS[/bold gold1]",
+                border_style="gold1",
+                expand=False
+            ))
 
-        # Again or not?
-        answer = input("Would you like to run another scan? (Y/N):")
+        # Ask again
+        answer = console.input(
+            "\nWould you like to run another scan? (Y/N): ").strip()
         if answer.upper() == "Y":
             continue
-
-        elif answer.upper() == "N":
-            print("Thank you for using this program <3",
-                  "Goodbye!")
-            break
         else:
-            print("Please enter Y or N")
+            console.print(
+                "[accent]Thank you for using this program <3 Goodbye![/accent]")
+            break
