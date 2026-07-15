@@ -1,1 +1,4 @@
-dnspython==2.8.0
+dnspython
+ipaddress
+rich
+requests

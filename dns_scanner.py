@@ -6,6 +6,7 @@ import dns.exception
 import ipaddress
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
 
 from rich.console import Console
 from rich.panel import Panel
@@ -143,6 +144,51 @@ def load_custom_ips(file_path):
         return None
 
 
+# Online scan
+def fetch_live_dns_from_web(limit: int = 50) -> Optional[list]:
+    url = "https://public-dns.info/nameservers.txt"
+
+    with console.status("[accent]Fetching fresh DNS servers from public-dns.info...[/accent]", spinner="point"):
+        try:
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                raw_ips = response.text.splitlines()
+                live_servers = []
+                count = 0
+
+                for ip in raw_ips:
+                    ip = ip.strip()
+                    if not ip or ip.startswith("#"):
+                        continue
+
+                    try:
+                        ip_obj = ipaddress.ip_address(ip)
+                        ip_version = f"IPv{ip_obj.version}"
+
+                        live_servers.append({
+                            "name": f"Online_Server_{count + 1}",
+                            "ip": ip,
+                            "type": ip_version
+                        })
+                        count += 1
+
+                        if count >= limit:
+                            break
+
+                    except ValueError:
+                        continue
+
+                return live_servers
+            else:
+                console.print(
+                    f"[warning]Failed to fetch: Server returned status {response.status_code}[/warning]")
+        except Exception as e:
+            console.print(
+                f"[danger]Network error while fetching live DNS: {e}[/danger]")
+
+    return None
+
+
 # Start
 if __name__ == "__main__":
 
@@ -164,27 +210,30 @@ if __name__ == "__main__":
        # Interactive Mode
         console.print("\n[bold cyan]Select Scan Mode:[/bold cyan]")
         console.print(
-            "  [bold green]1.[/bold green] Use Default Public DNS List")
+            "  [bold green]1.[/bold green] Use Default Public DNS List (Offline)")
         console.print(
             "  [bold green]2.[/bold green] Load Custom IP/DNS List from TXT File")
-        console.print("  [bold green]3.[/bold green] Exit")
+        console.print(
+            "  [bold green]3.[/bold green] Fetch & Scan Live DNS from the Internet (Auto)")
+        console.print("  [bold green]4.[/bold green] Exit")
         console.print("[dim]" + "=" * 45 + "[/dim]")
 
         choice = console.input(
-            "[bold white]Enter choice (1, 2 or 3): [/bold white]").strip()
+            "[bold white]Enter choice (1, 2, 3 or 4): [/bold white]").strip()
 
-        # Conditions
-        if choice == "3":
+        # Exit
+        if choice == "4":
             console.print(
-                "[accent]Thank you for using this program <3 Goodbye![/accent]")
+                "\n[accent]Thank you for using this program <3 Goodbye![/accent]")
             break
 
-        if choice == "2":
+        # Custom list
+        elif choice == "2":
             file_path = console.input(
-                "[bold white]Enter the path to your TXT file (e.g., targets.txt): [/bold white]").strip()
+                "[bold white]Enter the path to your TXT file (e.g., targets.txt): [/bold white]"
+            ).strip()
             file_path = file_path.strip("'\"")
             custom_list = load_custom_ips(file_path)
-
             if custom_list:
                 active_servers = custom_list
                 console.print(
@@ -194,6 +243,21 @@ if __name__ == "__main__":
                     "[warning]Falling back to default DNS list...[/warning]")
                 from dns_servers import PUBLIC_DNS_SERVERS
                 active_servers = PUBLIC_DNS_SERVERS
+
+        # Online scan
+        elif choice == "3":
+            online_list = fetch_live_dns_from_web(limit=50)
+            if online_list:
+                active_servers = online_list
+                console.print(
+                    f"[success]Successfully retrieved {len(active_servers)} fresh DNS servers from the web![/success]")
+            else:
+                console.print(
+                    "[warning]Falling back to default DNS list...[/warning]")
+                from dns_servers import PUBLIC_DNS_SERVERS
+                active_servers = PUBLIC_DNS_SERVERS
+
+        # Back to default
         else:
             from dns_servers import PUBLIC_DNS_SERVERS
             active_servers = PUBLIC_DNS_SERVERS
