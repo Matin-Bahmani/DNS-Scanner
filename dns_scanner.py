@@ -5,11 +5,13 @@ import dns.resolver
 import dns.exception
 import ipaddress
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.theme import Theme
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
 # Theme
 custom_theme = Theme({
@@ -23,20 +25,15 @@ console = Console(theme=custom_theme)
 
 
 # Core
-def measure_dns_latency(
-    server_ip: str,
-    domain: str = "google.com",
-    timeout: float = 2.0,
-    attempts: int = 3,
-) -> Optional[float]:
+def worker_test_server(server: dict, domain: str = "google.com", timeout: float = 2.0, attempts: int = 3) -> dict:
+
+    server_ip = server["ip"]
     resolver = dns.resolver.Resolver(configure=False)
     resolver.nameservers = [server_ip]
     resolver.timeout = timeout
     resolver.lifetime = timeout
 
-    # Speed test
     latencies = []
-
     record_type = "AAAA" if ":" in server_ip else "A"
 
     for _ in range(attempts):
@@ -53,15 +50,64 @@ def measure_dns_latency(
         ):
             continue
 
-    if not latencies:
-        return None
+    # IPv4 or IPv6
+    ip_type = "IPv6" if ":" in server_ip else "IPv4"
 
-    return sum(latencies) / len(latencies)
+    if latencies:
+        avg_latency = sum(latencies) / len(latencies)
+        return {
+            "success": True,
+            "name": server["name"],
+            "ip": server_ip,
+            "type": ip_type,
+            "ping_str": f"{avg_latency:.1f} ms",
+            "raw_latency": avg_latency
+        }
+    else:
+        return {
+            "success": False,
+            "name": server["name"],
+            "ip": server_ip,
+            "type": ip_type,
+            "ping_str": "Timeout",
+            "raw_latency": float('inf')
+        }
 
 
-def show_loading(message="Scanning"):
-    with console.status(f"[accent]{message}[/accent]", spinner="dots") as status:
-        time.sleep(0.5)
+# Loding line
+def run_parallel_scan(servers_list: list, max_threads: int = 20) -> list:
+
+    results = []
+
+    progress_bar = Progress(
+        SpinnerColumn(spinner_name="dots"),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(bar_width=40),
+        TaskProgressColumn(),
+    )
+
+    with progress_bar:
+        scan_task = progress_bar.add_task(
+            "[accent]Scanning servers in parallel...[/accent]",
+            total=len(servers_list)
+        )
+
+        with ThreadPoolExecutor(max_workers=max_threads) as executor:
+            futures = {
+                executor.submit(worker_test_server, server): server
+                for server in servers_list
+            }
+
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception:
+                    pass
+                finally:
+                    progress_bar.update(scan_task, advance=1)
+
+    return results
 
 
 # Config file
@@ -108,7 +154,7 @@ if __name__ == "__main__":
  / /_/ / /|  /___/ /   ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/   /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|     
 
-            Version 1.2.2 • Developed by Matin-Bahmani 
+            Version 2.0.0 • Developed by Matin-Bahmani 
             Github • https://github.com/Matin-Bahmani         
                                                            
           [/bold green]""")
@@ -152,8 +198,11 @@ if __name__ == "__main__":
             from dns_servers import PUBLIC_DNS_SERVERS
             active_servers = PUBLIC_DNS_SERVERS
 
+        # Start scaning
         console.input(
             "\n[bold yellow]Press Enter to start the scan...[/bold yellow]\n")
+
+        scan_results = run_parallel_scan(active_servers, max_threads=20)
 
         # List
         table = Table(
@@ -166,33 +215,23 @@ if __name__ == "__main__":
         Best_DNS = []
 
         # Test servers
-        for server in active_servers:
-            show_loading(f"Testing {server['name']} ({server['ip']})")
-            latency = measure_dns_latency(server["ip"])
+        for res in scan_results:
+            latency = res["raw_latency"]
+            ping_str = res["ping_str"]
 
-            ip_type = "IPv6" if ":" in server["ip"] else "IPv4"
-
-            if latency is not None:
-                result = f"{latency:.1f} ms"
-
-                Best_DNS.append({
-                    "name": server["name"],
-                    "ip": server["ip"],
-                    "ping": result,
-                    "raw_latency": latency
-                })
-
+            if res["success"]:
+                Best_DNS.append(res)
                 if latency < 50:
-                    colored_result = f"[bold green]{result}[/bold green]"
+                    colored_result = f"[bold green]{ping_str}[/bold green]"
                 elif latency < 120:
-                    colored_result = f"[bold yellow]{result}[/bold yellow]"
+                    colored_result = f"[bold yellow]{ping_str}[/bold yellow]"
                 else:
-                    colored_result = f"[orange3]{result}[/orange3]"
+                    colored_result = f"[orange3]{ping_str}[/orange3]"
             else:
-                colored_result = "[danger]No response[/danger]"
+                colored_result = f"[danger]{ping_str}[/danger]"
 
-            table.add_row(server['name'], server['ip'],
-                          ip_type, colored_result)
+            table.add_row(res['name'], res['ip'], res['type'], colored_result)
+
         # Show table
         console.print(table)
         console.print("[success]Test is completed![/success]\n")
@@ -206,13 +245,13 @@ if __name__ == "__main__":
 
             if ipv4_bests:
                 fastest_v4 = min(ipv4_bests, key=lambda x: x['raw_latency'])
-                recommendation_text += f"🥇 [bold green]Best IPv4 DNS:[/bold green] {fastest_v4['name']} [{fastest_v4['ip']}] -> [bold green]{fastest_v4['ping']}[/bold green]\n"
+                recommendation_text += f"🥇 [bold green]Best IPv4 DNS:[/bold green] {fastest_v4['name']} [{fastest_v4['ip']}] -> [bold green]{fastest_v4['ping_str']}[/bold green]\n"
             else:
                 recommendation_text += "[danger]No working IPv4 DNS found.[/danger]\n"
 
             if ipv6_bests:
                 fastest_v6 = min(ipv6_bests, key=lambda x: x['raw_latency'])
-                recommendation_text += f"🚀 [bold green]Best IPv6 DNS:[/bold green] {fastest_v6['name']} [{fastest_v6['ip']}] -> [bold green]{fastest_v6['ping']}[/bold green]"
+                recommendation_text += f"🚀 [bold green]Best IPv6 DNS:[/bold green] {fastest_v6['name']} [{fastest_v6['ip']}] -> [bold green]{fastest_v6['ping_str']}[/bold green]"
             else:
                 recommendation_text += "[warning]No working IPv6 DNS found. (Check IPv6 settings)[/warning]"
 
