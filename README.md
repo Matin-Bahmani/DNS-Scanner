@@ -5,12 +5,12 @@ A modern, blazing-fast, multi-threaded DNS speed testing and benchmarking tool w
 
 ## 🚀 Features
 
-*   **Blazing-Fast Multi-threading**: Tests dozens of DNS servers concurrently in seconds using `ThreadPoolExecutor`.
-*   **Live Web Scraper**: Automatically fetches the freshest, verified DNS list directly from `public-dns.info`.
-*   **Custom Target Scanner**: Easily loads and validates custom IP lists from any `.txt` file.
-*   **Beautiful Rich UI**: Dynamic terminal status spinner, color-coded latency tables, and gold-bordered recommendations panel.
-*   **Smart IPv4 & IPv6 Support**: Automatically detects IP types and recommends the absolute fastest server for each protocol.
-*   **Robust Error Handling**: Safely handles missing files and dependencies without breaking runtime execution.
+*   **Multi-threaded Engine**: Tests dozens of DNS servers concurrently in seconds.
+*   **Live Web Scraper**: Fetches fresh, verified DNS lists automatically from the web.
+*   **Custom IP Lists**: Easily loads and validates targets from any `.txt` file.
+*   **Modern Rich UI**: Interactive progress bar, color-coded tables, and best DNS panels.
+*   **Dual Protocol Support**: Auto-detects IPv4/IPv6 and recommends the fastest servers.
+*   **Robust Error Handling**: Prevents crashes during missing files or network issues.
 
 ## 📦 Requirements & Installation
 
