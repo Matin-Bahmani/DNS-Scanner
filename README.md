@@ -5,12 +5,12 @@ A modern, blazing-fast, multi-threaded DNS speed testing and benchmarking tool w
 
 ## 🚀 Features
 
-*   **Blazing-Fast Multi-threading**: Tests dozens of DNS servers concurrently in seconds using `ThreadPoolExecutor`
-*   **Live Web Scraper**: Automatically fetches the freshest, verified DNS list directly from `public-dns.info`
-*   **Custom Target Scanner**: Easily loads and validates custom IP lists from any `.txt` file[cite: 1].
-*   **Beautiful Rich UI**: Dynamic terminal status spinner, color-coded latency tables, and gold-bordered recommendations panel
-*   **Smart IPv4 & IPv6 Support**: Automatically detects IP types and recommends the absolute fastest server for each protocol
-
+*   **Blazing-Fast Multi-threading**: Tests dozens of DNS servers concurrently in seconds using `ThreadPoolExecutor`.
+*   **Live Web Scraper**: Automatically fetches the freshest, verified DNS list directly from `public-dns.info`.
+*   **Custom Target Scanner**: Easily loads and validates custom IP lists from any `.txt` file.
+*   **Beautiful Rich UI**: Dynamic terminal status spinner, color-coded latency tables, and gold-bordered recommendations panel.
+*   **Smart IPv4 & IPv6 Support**: Automatically detects IP types and recommends the absolute fastest server for each protocol.
+*   **Robust Error Handling**: Safely handles missing files and dependencies without breaking runtime execution.
 
 ## 📦 Requirements & Installation
 
@@ -64,7 +64,7 @@ When prompted by the script, simply enter:
 ```top_100_dns.txt```
 
 
-## ✨ Output Example (v2.0.0)
+## ✨ Output Example (v2.0.1)
 ```
     ____  _   _  ____     _____ ______ __    _   _ _   _  _____ ___ 
    / __ \/ | / / ___/    / ___// ____/   |  / | / / | / / ____/ __ \
@@ -72,7 +72,7 @@ When prompted by the script, simply enter:
  / /_/ / /|  /___/ /    ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/    /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|  
                                                                     
-             Version 2.0.0 • Developed by Matin-Bahmani
+             Version 2.0.1 • Developed by Matin-Bahmani
              Github • https://github.com/Matin-Bahmani
 
 Select Scan Mode:

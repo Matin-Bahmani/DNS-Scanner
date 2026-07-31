@@ -200,7 +200,7 @@ if __name__ == "__main__":
  / /_/ / /|  /___/ /   ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/   /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|     
 
-            Version 2.0.0 • Developed by Matin-Bahmani 
+            Version 2.0.1 • Developed by Matin-Bahmani 
             Github • https://github.com/Matin-Bahmani         
                                                            
           [/bold green]""")
@@ -241,8 +241,14 @@ if __name__ == "__main__":
             else:
                 console.print(
                     "[warning]Falling back to default DNS list...[/warning]")
-                from dns_servers import PUBLIC_DNS_SERVERS
-                active_servers = PUBLIC_DNS_SERVERS
+                try:
+                    from dns_servers import PUBLIC_DNS_SERVERS
+                    active_servers = PUBLIC_DNS_SERVERS
+
+                except ModuleNotFoundError:
+                    console.print(
+                        "\n[bold red]'dns_servers.py' file not found!Please make sure it exists in the tool directory.[/bold red]")
+                    continue
 
         # Online scan
         elif choice == "3":
@@ -251,16 +257,29 @@ if __name__ == "__main__":
                 active_servers = online_list
                 console.print(
                     f"[success]Successfully retrieved {len(active_servers)} fresh DNS servers from the web![/success]")
+
             else:
                 console.print(
                     "[warning]Falling back to default DNS list...[/warning]")
-                from dns_servers import PUBLIC_DNS_SERVERS
-                active_servers = PUBLIC_DNS_SERVERS
+                try:
+                    from dns_servers import PUBLIC_DNS_SERVERS
+                    active_servers = PUBLIC_DNS_SERVERS
+
+                except ModuleNotFoundError:
+                    console.print(
+                        "\n[bold red]'dns_servers.py' file not found!Please make sure it exists in the tool directory.[/bold red]")
+                    continue
 
         # Back to default
         else:
-            from dns_servers import PUBLIC_DNS_SERVERS
-            active_servers = PUBLIC_DNS_SERVERS
+            try:
+                from dns_servers import PUBLIC_DNS_SERVERS
+                active_servers = PUBLIC_DNS_SERVERS
+
+            except ModuleNotFoundError:
+                console.print(
+                    "\n[bold red]'dns_servers.py' file not found!Please make sure it exists in the tool directory.[/bold red]")
+                continue
 
         # Start scaning
         console.input(
