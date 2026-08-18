@@ -93,7 +93,7 @@ Enter choice (1, 2, 3 or 4): 3
 ⠋ Fetching fresh DNS servers from public-dns.info...
 [✓] Successfully retrieved 50 fresh DNS servers from the web!
 
-Enter domain to test against(Press Enter for 'google.com'): 
+Enter domain to test against(Press Enter for 'google.com'): youtube.com
 Press Enter to start the scan...
 
 Scanning servers in parallel... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%
