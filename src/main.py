@@ -14,6 +14,8 @@ from rich.table import Table
 from rich.theme import Theme
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Theme
 custom_theme = Theme({
     "info": "dim cyan",
@@ -76,7 +78,7 @@ def worker_test_server(server: dict, domain: str = "google.com", timeout: float 
 
 
 # Loding line
-def run_parallel_scan(servers_list: list, max_threads: int = 20) -> list:
+def run_parallel_scan(servers_list: list, target_domain: str = "google.com", max_threads: int = 20) -> list:
 
     results = []
 
@@ -95,7 +97,7 @@ def run_parallel_scan(servers_list: list, max_threads: int = 20) -> list:
 
         with ThreadPoolExecutor(max_workers=max_threads) as executor:
             futures = {
-                executor.submit(worker_test_server, server): server
+                executor.submit(worker_test_server, server, target_domain): server
                 for server in servers_list
             }
 
@@ -200,7 +202,7 @@ if __name__ == "__main__":
  / /_/ / /|  /___/ /   ___/ / /___/ ___ |/ /|  / /|  / /___/ _, _/ 
 /_____/_/ |_//____/   /____/\____/_/  |_/_/ |_/_/ |_/_____/_/ |_|     
 
-            Version 2.0.1 • Developed by Matin-Bahmani 
+            Version 2.1.0 • Developed by M.Matin-Bahmani 
             Github • https://github.com/Matin-Bahmani         
                                                            
           [/bold green]""")
@@ -242,7 +244,7 @@ if __name__ == "__main__":
                 console.print(
                     "[warning]Falling back to default DNS list...[/warning]")
                 try:
-                    from dns_servers import PUBLIC_DNS_SERVERS
+                    from data.dns_servers import PUBLIC_DNS_SERVERS
                     active_servers = PUBLIC_DNS_SERVERS
 
                 except ModuleNotFoundError:
@@ -262,7 +264,7 @@ if __name__ == "__main__":
                 console.print(
                     "[warning]Falling back to default DNS list...[/warning]")
                 try:
-                    from dns_servers import PUBLIC_DNS_SERVERS
+                    from data.dns_servers import PUBLIC_DNS_SERVERS
                     active_servers = PUBLIC_DNS_SERVERS
 
                 except ModuleNotFoundError:
@@ -273,23 +275,30 @@ if __name__ == "__main__":
         # Back to default
         else:
             try:
-                from dns_servers import PUBLIC_DNS_SERVERS
+                from data.dns_servers import PUBLIC_DNS_SERVERS
                 active_servers = PUBLIC_DNS_SERVERS
 
             except ModuleNotFoundError:
                 console.print(
-                    "\n[bold red]'dns_servers.py' file not found!Please make sure it exists in the tool directory.[/bold red]")
+                    "\n[bold red]'dns_servers.py' file not found! Please make sure it exists in the tool directory.[/bold red]")
                 continue
 
         # Start scaning
-        console.input(
-            "\n[bold yellow]Press Enter to start the scan...[/bold yellow]\n")
+        target_domain = console.input(
+            "\n[bold yellow]Enter domain to test against(Press Enter for 'google.com'):[/bold yellow]")
 
-        scan_results = run_parallel_scan(active_servers, max_threads=20)
+        if not target_domain:
+            target_domain = "google.com"
+
+        console.input(
+            "[bold yellow]Press Enter to start the scan...[/bold yellow]\n")
+
+        scan_results = run_parallel_scan(
+            active_servers, target_domain=target_domain, max_threads=20)
 
         # List
         table = Table(
-            title="[bold white]DNS Speed Test Results[/bold white]", show_lines=True)
+            title="[bold white]\nDNS Speed Test Results[/bold white]", show_lines=True)
         table.add_column("Server Name", style="cyan", no_wrap=True)
         table.add_column("IP Address", style="magenta")
         table.add_column("Type", justify="center")
